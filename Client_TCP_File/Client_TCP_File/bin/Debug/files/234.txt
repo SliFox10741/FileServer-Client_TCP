@@ -1,0 +1,174 @@
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.IO;
+using System.Security.Cryptography;
+using System.Collections.Generic;
+
+namespace UDP_Server_Client
+{
+    class Client
+    {
+        private static UdpClient client;
+        private static IPEndPoint serverEndPoint;
+        private static int port = 8087;
+        private static string address = "127.0.0.1";
+        private static byte[] encryptionKey;
+        private static Dictionary<string, List<byte[]>> fileParts = new Dictionary<string, List<byte[]>>();
+        private static Dictionary<string, int> totalPartsCount = new Dictionary<string, int>();
+
+        static void Main(string[] args)
+        {
+            Connect();
+
+            // Пример запроса файла
+            Console.Write("Введите имя файла для запроса: ");
+            string fileName = Console.ReadLine();
+            GetFileByName(fileName);
+        }
+
+        // Подключение к серверу
+        public static bool Connect()
+        {
+            client = new UdpClient();
+            serverEndPoint = new IPEndPoint(IPAddress.Parse(address), port);
+
+            byte[] connectMessage = Encoding.UTF8.GetBytes("CONNECT");
+            client.Send(connectMessage, connectMessage.Length, serverEndPoint);
+
+            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            encryptionKey = client.Receive(ref remoteEndPoint);
+
+            Console.WriteLine("Подключено к серверу и получен ключ шифрования.");
+            Thread receiveThread = new Thread(ReceiveMessages);
+            receiveThread.Start();
+
+            return true;
+        }
+
+        // Функция запроса файла по имени
+        public static void GetFileByName(string fileName)
+        {
+            byte[] nameBuffer = Encoding.UTF8.GetBytes("NEEDFILE:" + fileName);
+            nameBuffer = EncryptData(nameBuffer, encryptionKey);
+            nameBuffer = Encoding.UTF8.GetBytes(Convert.ToBase64String(nameBuffer));
+            client.Send(nameBuffer, nameBuffer.Length, serverEndPoint);
+        }
+
+        // Получение сообщений от сервера
+        private static void ReceiveMessages()
+        {
+            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            while (true)
+            {
+                byte[] buffer = client.Receive(ref remoteEndPoint);
+                buffer = Convert.FromBase64String(Encoding.UTF8.GetString(buffer));
+                buffer = DecryptData(buffer, encryptionKey);
+                ProcessReceivedData(buffer);
+            }
+        }
+
+        // Обработка полученных данных
+        private static void ProcessReceivedData(byte[] buffer)
+        {
+            string message = Encoding.UTF8.GetString(buffer);
+
+            if (message.StartsWith("FILEPART:"))
+            {
+                string[] parts = message.Split(':');
+                string fileName = parts[1];
+                int partNumber = int.Parse(parts[2]);
+                int totalParts = int.Parse(parts[3]);
+
+                int dataIndex = message.IndexOf(':', message.IndexOf(':', message.IndexOf(':') + 1) + 1) + 1;
+                byte[] fileData = new byte[buffer.Length - dataIndex];
+                Array.Copy(buffer, dataIndex, fileData, 0, fileData.Length);
+
+                if (!fileParts.ContainsKey(fileName))
+                {
+                    fileParts[fileName] = new List<byte[]>(new byte[totalParts][]);
+                    totalPartsCount[fileName] = totalParts;
+                }
+                fileParts[fileName][partNumber - 1] = fileData;
+
+                Console.WriteLine($"Получена часть {partNumber} файла '{fileName}'.");
+
+                // Подтверждение получения части файла
+                string ackMessage = $"ACK:{fileName}:{partNumber}";
+                byte[] ackBuffer = Encoding.UTF8.GetBytes(ackMessage);
+                ackBuffer = EncryptData(ackBuffer, encryptionKey);
+                ackBuffer = Encoding.UTF8.GetBytes(Convert.ToBase64String(ackBuffer));
+                client.Send(ackBuffer, ackBuffer.Length, serverEndPoint);
+
+                // Проверка на получение всех частей
+                if (fileParts[fileName].TrueForAll(part => part != null))
+                {
+                    SaveFile(fileName, fileParts[fileName]);
+                    fileParts.Remove(fileName);
+                    totalPartsCount.Remove(fileName);
+                    Console.WriteLine($"Файл '{fileName}' полностью получен и сохранен.");
+                }
+            }
+        }
+
+        // Сохранение файла на диск
+        private static void SaveFile(string fileName, List<byte[]> fileParts)
+        {
+            string directoryPath = @"files";
+            Directory.CreateDirectory(directoryPath);
+            string filePath = Path.Combine(directoryPath, fileName);
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            {
+                foreach (byte[] part in fileParts)
+                {
+                    fs.Write(part, 0, part.Length);
+                }
+            }
+        }
+
+        // Шифрование данных
+        private static byte[] EncryptData(byte[] data, byte[] key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.GenerateIV();
+                byte[] iv = aes.IV;
+
+                using (ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    ms.Write(iv, 0, iv.Length);
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        cs.Write(data, 0, data.Length);
+                    }
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        // Дешифрование данных
+        private static byte[] DecryptData(byte[] data, byte[] key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                byte[] iv = new byte[aes.BlockSize / 8];
+                Array.Copy(data, 0, iv, 0, iv.Length);
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, iv))
+                using (MemoryStream ms = new MemoryStream(data, iv.Length, data.Length - iv.Length))
+                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                using (MemoryStream result = new MemoryStream())
+                {
+                    cs.CopyTo(result);
+                    return result.ToArray();
+                }
+            }
+        }
+    }
+}
