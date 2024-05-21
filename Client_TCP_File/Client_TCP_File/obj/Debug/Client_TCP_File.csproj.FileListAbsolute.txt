@@ -5,3 +5,10 @@ C:\Users\Лучший\Desktop\Client_TCP_File\Client_TCP_File\obj\Debug\Client_T
 C:\Users\Лучший\Desktop\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.csproj.CoreCompileInputs.cache
 C:\Users\Лучший\Desktop\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.exe
 C:\Users\Лучший\Desktop\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.pdb
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\bin\Debug\Client_TCP_File.exe.config
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\bin\Debug\Client_TCP_File.exe
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\bin\Debug\Client_TCP_File.pdb
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.csproj.AssemblyReference.cache
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.csproj.CoreCompileInputs.cache
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.exe
+C:\Users\Лучший\Desktop\Task\Client_TCP_File\Client_TCP_File\obj\Debug\Client_TCP_File.pdb

@@ -7,20 +7,29 @@ using System.Threading;
 
 public class Server
 {
+    // Порт для прослушивания соединений
     private const int Port = 8086;
+
+    // Путь к директории с файлами
     private const string filesPath = @"C:\Users\Лучший\Documents";
 
+    // Метод для запуска сервера
     public void Start()
     {
+        // Создание TcpListener для прослушивания входящих соединений
         TcpListener listener = new TcpListener(IPAddress.Any, Port);
         listener.Start();
         Console.WriteLine("Сервер запущен и ожидает подключений...");
 
+        // Цикл для ожидания новых клиентов
         while (true)
         {
             try
             {
+                // Прием нового клиента
                 TcpClient client = listener.AcceptTcpClient();
+
+                // Создание нового потока для обработки клиента
                 Thread clientThread = new Thread(() => HandleClient(client));
                 clientThread.Start();
             }
@@ -31,19 +40,23 @@ public class Server
         }
     }
 
+    // Метод для обработки клиента
     private void HandleClient(TcpClient client)
     {
         try
         {
             using (NetworkStream stream = client.GetStream())
             {
+                // Чтение имени файла от клиента
                 byte[] buffer = new byte[1024];
                 int bytesRead = stream.Read(buffer, 0, buffer.Length);
                 string fileName = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
+                // Определение пути к файлу
                 string filePath = Path.Combine(filesPath, fileName);
                 if (File.Exists(filePath))
                 {
+                    // Отправка файла частями
                     using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                     {
                         byte[] fileBuffer = new byte[1024];
@@ -56,6 +69,7 @@ public class Server
                 }
                 else
                 {
+                    // Отправка сообщения, если файл не найден
                     byte[] notFoundMessage = Encoding.UTF8.GetBytes("File not found");
                     stream.Write(notFoundMessage, 0, notFoundMessage.Length);
                 }
@@ -67,6 +81,7 @@ public class Server
         }
         finally
         {
+            // Закрытие соединения с клиентом
             client.Close();
         }
     }

@@ -5,9 +5,13 @@ using System.Text;
 
 public class Client
 {
-    private const string serverAddress = "127.0.0.1"; // Заменить на IP адрес или доменное имя сервера
+    // Адрес сервера
+    private const string serverAddress = "192.168.250.87"; // Замени на IP адрес или доменное имя сервера
+
+    // Порт для соединения с сервером
     private const int Port = 8086;
 
+    // Метод для запуска клиента
     public void Start()
     {
         while (true)
@@ -24,20 +28,21 @@ public class Client
         }
     }
 
+    // Метод для запроса файла у сервера
     public void GetFileByName(string fileName)
     {
         try
         {
-            using (TcpClient client = new TcpClient(serverAddress, Port))
+            using (TcpClient client = new TcpClient(serverAddress, Port)) // Подключаемся к серверу
             using (NetworkStream stream = client.GetStream())
             {
                 byte[] fileNameBytes = Encoding.UTF8.GetBytes(fileName);
-                stream.Write(fileNameBytes, 0, fileNameBytes.Length);
+                stream.Write(fileNameBytes, 0, fileNameBytes.Length); // Отправляем имя файла на сервер
 
                 string filesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "files");
                 if (!Directory.Exists(filesDirectory))
                 {
-                    Directory.CreateDirectory(filesDirectory);
+                    Directory.CreateDirectory(filesDirectory); // Создаем директорию, если она не существует
                 }
 
                 string filePath = Path.Combine(filesDirectory, fileName);
@@ -45,14 +50,14 @@ public class Client
                 {
                     byte[] buffer = new byte[1024];
                     int bytesRead;
-                    while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0) // Читаем и записываем файл частями
                     {
                         fs.Write(buffer, 0, bytesRead);
                     }
                 }
-            }
 
-            Console.WriteLine($"Файл '{fileName}' успешно получен и сохранен.");
+                Console.WriteLine($"Файл '{fileName}' успешно получен и сохранен по пути: {filePath}"); // Выводим сообщение с путем к файлу
+            }
         }
         catch (Exception ex)
         {
