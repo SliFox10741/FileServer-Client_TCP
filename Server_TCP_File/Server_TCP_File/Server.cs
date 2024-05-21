@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Security.Cryptography;
 
 public class Server
 {
@@ -56,14 +57,27 @@ public class Server
                 string filePath = Path.Combine(filesPath, fileName);
                 if (File.Exists(filePath))
                 {
-                    // Отправка файла частями
-                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    // Генерация ключа и IV для шифрования
+                    using (Aes aesAlg = Aes.Create())
                     {
-                        byte[] fileBuffer = new byte[1024];
-                        int bytesSent;
-                        while ((bytesSent = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
+                        byte[] key = aesAlg.Key;
+                        byte[] iv = aesAlg.IV;
+
+                        // Отправка ключа и IV клиенту
+                        stream.Write(key, 0, key.Length);
+                        stream.Write(iv, 0, iv.Length);
+
+                        // Отправка файла частями
+                        using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                        using (ICryptoTransform encryptor = aesAlg.CreateEncryptor())
+                        using (CryptoStream csEncrypt = new CryptoStream(stream, encryptor, CryptoStreamMode.Write))
                         {
-                            stream.Write(fileBuffer, 0, bytesSent);
+                            byte[] fileBuffer = new byte[1024];
+                            int bytesSent;
+                            while ((bytesSent = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
+                            {
+                                csEncrypt.Write(fileBuffer, 0, bytesSent);
+                            }
                         }
                     }
                 }

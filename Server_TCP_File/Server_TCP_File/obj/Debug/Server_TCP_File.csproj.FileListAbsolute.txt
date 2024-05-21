@@ -12,3 +12,10 @@ C:\Users\Лучший\Desktop\Task\Server_TCP_File\Server_TCP_File\obj\Debug\Ser
 C:\Users\Лучший\Desktop\Task\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.csproj.CoreCompileInputs.cache
 C:\Users\Лучший\Desktop\Task\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.exe
 C:\Users\Лучший\Desktop\Task\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.pdb
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\bin\Debug\Server_TCP_File.exe.config
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\bin\Debug\Server_TCP_File.exe
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\bin\Debug\Server_TCP_File.pdb
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.csproj.AssemblyReference.cache
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.csproj.CoreCompileInputs.cache
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.exe
+C:\Users\Лучший\Desktop\Clonetask1\FileServer-Client_TCP\Server_TCP_File\Server_TCP_File\obj\Debug\Server_TCP_File.pdb
